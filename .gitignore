@@ -1,0 +1,31 @@
+# Composer vendor directory
+/vendor/
+
+# CI4 writable folders
+/writable/cache/
+/writable/logs/
+/writable/session/
+/writable/uploads/
+/writable/debugbar/
+
+# Environment files
+.env
+.env.test
+.env.production
+
+# OS / IDE files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs and temporary files
+*.log
+*.tmp
+
+# Node / NPM (if you ever use front-end assets)
+node_modules/
+npm-debug.log*
+yarn-error.log*
