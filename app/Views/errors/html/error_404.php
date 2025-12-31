@@ -1,7 +1,1 @@
-<?php
-
-use CodeIgniter\CLI\CLI;
-
-CLI::error('ERROR: ' . $code);
-CLI::write($message);
-CLI::newLine();
+<h1>404 - Page Not Found</h1>
