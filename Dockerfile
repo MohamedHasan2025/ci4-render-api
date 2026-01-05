@@ -1,28 +1,44 @@
-# Use official PHP image with Apache
+# Use official PHP + Apache image
 FROM php:8.2-apache
-
-# Enable required PHP extensions
-RUN docker-php-ext-install mysqli pdo pdo_mysql
-
-# Enable mod_rewrite for CodeIgniter
-RUN a2enmod rewrite
 
 # Set working directory
 WORKDIR /var/www/html
 
-# Copy the entire project into container
-COPY . /var/www/html
+# Install system dependencies and PHP extensions required by CI4
+RUN apt-get update && apt-get install -y \
+    git \
+    unzip \
+    libicu-dev \
+    libxml2-dev \
+    libzip-dev \
+    && docker-php-ext-install intl mbstring mysqli pdo pdo_mysql zip \
+    && a2enmod rewrite
 
-# Set correct permissions (optional)
-RUN chown -R www-data:www-data /var/www/html
-RUN chmod -R 755 /var/www/html
+# Set Apache document root to public/
+ENV APACHE_DOCUMENT_ROOT /var/www/html/public
+
+# Update Apache config to use public/ as root
+RUN sed -ri -e 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/*.conf \
+    && sed -ri -e 's!/var/www/!/var/www/html/public!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
+
+# Copy composer.lock and composer.json first (for caching)
+COPY composer.json composer.lock /var/www/html/
 
 # Install Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-RUN composer install --no-dev --optimize-autoloader
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Expose port
-EXPOSE 8080
+# Install PHP dependencies without dev packages
+RUN composer install --no-dev --optimize-autoloader --no-interaction || true
 
-# Start Apache in foreground
+# Copy all project files
+COPY . /var/www/html
+
+# Give proper permissions
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html
+
+# Expose port 80
+EXPOSE 80
+
+# Start Apache in the foreground
 CMD ["apache2-foreground"]
