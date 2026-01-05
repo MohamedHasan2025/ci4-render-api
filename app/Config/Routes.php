@@ -7,5 +7,12 @@ use CodeIgniter\Router\RouteCollection;
  */
 $routes->get('/', 'Home::index');
 
-
 $routes->post('get-availabilities', 'ApiController::sendAvailability');
+
+$routes->post('/reserve', 'ApiController::reserveAvailability');
+
+$routes->post('/cancel-reservation', 'ApiController::cancelReservation');
+
+$routes->post('/book', 'ApiController::bookReservation');
+    
+$routes->post('/cancel-booking', 'ApiController::cancelReservation');
