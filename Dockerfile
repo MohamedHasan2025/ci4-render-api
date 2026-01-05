@@ -5,14 +5,24 @@ FROM php:8.2-apache
 WORKDIR /var/www/html
 
 # Install system dependencies and PHP extensions required by CI4
+# Install system dependencies and PHP extensions
 RUN apt-get update && apt-get install -y \
-    git \
-    unzip \
-    libicu-dev \
-    libxml2-dev \
-    libzip-dev \
-    && docker-php-ext-install intl mbstring mysqli pdo pdo_mysql zip \
-    && a2enmod rewrite
+        git \
+        unzip \
+        libicu-dev \
+        libxml2-dev \
+        libzip-dev \
+        libonig-dev \
+        zlib1g-dev \
+        gcc \
+        make \
+        autoconf \
+        g++ \
+    && docker-php-ext-configure intl \
+    && docker-php-ext-install -j$(nproc) intl mbstring mysqli pdo pdo_mysql zip \
+    && a2enmod rewrite \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # Set Apache document root to public/
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
