@@ -203,13 +203,6 @@ class ApiController extends Controller
             ])->setStatusCode(401);
         }
 
-        if (!$productId || !$from || !$to) {
-            return $this->response->setJSON([
-                'status' => 'error',
-                'message' => 'Missing required parameters'
-            ])->setStatusCode(401);
-        }
-
         $hdapitools = new HDAPITools();
 
         $encryptedAuthMessage = $hdapitools->authenticate();
