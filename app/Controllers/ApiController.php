@@ -184,11 +184,29 @@ class ApiController extends Controller
         // Get PHP-auth credentials sent via Basic Auth
         $username = $this->request->getServer('PHP_AUTH_USER');
         $password = $this->request->getServer('PHP_AUTH_PW');
+        
+        $username = 'hdportallogin1@gmail.com';
+        $password = 'RWry0L=bjvGm';
+
+        // Get query parameters
+        $params = $this->request->getGet();
+
+        $productId = $params['productId'] ?? null;
+        $from      = $params['from'] ?? null;
+        $to        = $params['to'] ?? null;
+        $pax       = $params['pax'] ?? 5; // default 1
 
         if (!$username || !$password) {
             return $this->response->setJSON([
                 'status' => 'error',
                 'message' => 'Missing Basic Auth credentials'
+            ])->setStatusCode(401);
+        }
+
+        if (!$productId || !$from || !$to) {
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => 'Missing required parameters'
             ])->setStatusCode(401);
         }
 
@@ -210,12 +228,19 @@ class ApiController extends Controller
         $data_jwt = json_decode($response->getBody());
 
         // Now prepare request data for times API
-        $jsonData_Times = '{    
-                                "sdate":"2026-03-01",
-                                "edate":"2026-03-01",
-                                "id":"R1001",
-                                "pax":"1"
-                            }';
+        // $jsonData_Times = '{    
+        //                         "sdate":"2026-03-01",
+        //                         "edate":"2026-03-01",
+        //                         "id":"R1001",
+        //                         "pax":"1"
+        //                     }';
+
+        $jsonData_Times = json_encode([
+                            "sdate" => $from,
+                            "edate" => $to,
+                            "id"    => $productId,
+                            "pax"   => (string) $pax
+                        ]);
                     
         $data_Times = json_decode($jsonData_Times, true);
 
