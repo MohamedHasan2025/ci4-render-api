@@ -301,7 +301,7 @@ class ApiController extends Controller
 
             $availabilities[] = [
                 'dateTime' => $item['dt'],
-                'productId' => $item['id'],
+                'productId' => $item['id'].'-'.$item['fn'],
                 'cutoffSeconds' => $cutoffSeconds,
                 'vacancies' => $item['avs'],
                 'currency' => 'AED',
