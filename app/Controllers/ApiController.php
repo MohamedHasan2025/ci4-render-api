@@ -189,12 +189,12 @@ class ApiController extends Controller
         $password = 'RWry0L=bjvGm';
 
         // Get query parameters
-        $params = $this->request->getGet();
+        // $params = $this->request->getGet();
 
-        $productId = $params['productId'] ?? null;
-        $from      = $params['from'] ?? null;
-        $to        = $params['to'] ?? null;
-        $pax       = $params['pax'] ?? 5; // default 1
+        // $productId = $params['productId'] ?? null;
+        // $from      = $params['from'] ?? null;
+        // $to        = $params['to'] ?? null;
+        // $pax       = $params['pax'] ?? 5; // default 1
 
         if (!$username || !$password) {
             return $this->response->setJSON([
@@ -228,19 +228,19 @@ class ApiController extends Controller
         $data_jwt = json_decode($response->getBody());
 
         // Now prepare request data for times API
-        // $jsonData_Times = '{    
-        //                         "sdate":"2026-03-01",
-        //                         "edate":"2026-03-01",
-        //                         "id":"R1001",
-        //                         "pax":"1"
-        //                     }';
+        $jsonData_Times = '{    
+                                "sdate":"2026-03-01",
+                                "edate":"2026-03-01",
+                                "id":"R1001",
+                                "pax":"1"
+                            }';
 
-        $jsonData_Times = json_encode([
-                            "sdate" => $from,
-                            "edate" => $to,
-                            "id"    => $productId,
-                            "pax"   => (string) $pax
-                        ]);
+        // $jsonData_Times = json_encode([
+        //                     "sdate" => $from,
+        //                     "edate" => $to,
+        //                     "id"    => $productId,
+        //                     "pax"   => (string) $pax
+        //                 ]);
                     
         $data_Times = json_decode($jsonData_Times, true);
 
