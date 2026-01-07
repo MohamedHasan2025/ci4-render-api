@@ -295,11 +295,15 @@ class ApiController extends Controller
 
             // Build prices
             $retailPrices = [];
+            $count = 1;
             foreach ($item['pr'] as $price) {
-                $retailPrices[] = [
+                if ($count <= 2) {
+                    $retailPrices[] = [
                     'category' => strtoupper($price['group'] == 't-14400' ? 'ADULT' : 'CHILD'),
                     'price'    => (float) $price['price']
                 ];
+                    $count++;   
+                }                
             }
 
             $availabilities[] = [
