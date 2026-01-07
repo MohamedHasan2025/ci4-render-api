@@ -223,7 +223,7 @@ class ApiController extends Controller
         // Now prepare request data for times API
         $jsonData_Times = '{    
                                 "sdate":"2026-03-01",
-                                "edate":"2026-03-01",
+                                "edate":"2026-03-10",
                                 "id":"R1001",
                                 "pax":"1"
                             }';
