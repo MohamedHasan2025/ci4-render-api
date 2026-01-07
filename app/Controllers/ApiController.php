@@ -300,7 +300,7 @@ class ApiController extends Controller
                 if ($count <= 2) {
                     $retailPrices[] = [
                     'category' => strtoupper($price['group'] == 't-14400' ? 'ADULT' : 'CHILD'),
-                    'price'    => (float) $price['price']
+                    'price'    => '67619'
                 ];
                     $count++;   
                 }                
@@ -308,7 +308,7 @@ class ApiController extends Controller
 
             $availabilities[] = [
                 'dateTime' => $item['dt'],
-                'productId' => $item['id'].'-'.$item['fn'],
+                'productId' => $item['id'],
                 'cutoffSeconds' => $cutoffSeconds,
                 'vacancies' => $item['avs'],
                 'currency' => 'AED',
