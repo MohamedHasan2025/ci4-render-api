@@ -7,7 +7,7 @@ use CodeIgniter\Router\RouteCollection;
  */
 $routes->get('/', 'Home::index');
 
-$routes->post('get-availabilities', 'ApiController::sendAvailability');
+$routes->get('1/get-availabilities', 'ApiController::sendAvailability');
 
 $routes->post('/reserve', 'ApiController::reserveAvailability');
 
