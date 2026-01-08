@@ -290,35 +290,47 @@ class ApiController extends Controller
             $cutoffSeconds = $timestampDt - $timestampCo;
 
             // Build prices
-            // $retailPrices = [];
-            // $count = 1;
-            // foreach ($item['pr'] as $price) {
-            //     if ($count <= 2) {
-            //         $retailPrices[] = [
-            //         'category' => strtoupper($price['group'] == 't-14400' ? 'ADULT' : 'CHILD'),
-            //         'price'    => (float) $price['price']
-            //     ];
-            //         $count++;   
-            //     }                
-            // }
+            $retailPrices = [];
+            $count = 1;
+            foreach ($item['pr'] as $price) {
+                if ($count <= 2) {
+                    $retailPrices[] = [
+                    'category' => strtoupper($price['group'] == 't-14400' ? 'ADULT' : 'CHILD'),
+                    'price'    => (float) $price['price']
+                ];
+                    $count++;   
+                }                
+            }
 
             $availabilities[] = [
-                'dateTime' => $item['dt'], // ISO 8601 datetime
-                'productId' => $item['id'],
-                'cutoffSeconds' => (int) $cutoffSeconds,
+                'dateTime' => $item['dt'],
+                'productId' => $item['id'].'-'.$item['fn'],
+                //'productId' => $item['id'],
+                'cutoffSeconds' => $cutoffSeconds,
+                'vacancies' => $item['avs'],
                 'currency' => 'AED',
-            
-                'vacanciesByCategory' => [
-                    [
-                        'category'   => 'ADULT',
-                        'vacancies'  => (int) $item['avs'],
-                    ],
-                    [
-                        'category'   => 'CHILD',
-                        'vacancies'  => (int) $item['avs'],
-                    ],
-                ],
+                'pricesByCategory' => [
+                    'retailPrices' => $retailPrices
+                ]
             ];
+
+            // $availabilities[] = [
+            //         'dateTime' => $item['dt'], // ISO 8601 datetime
+            //         'productId' => $item['id'] . '-' . $item['fn'],
+            //         'cutoffSeconds' => (int) $cutoffSeconds,
+            //         'currency' => 'AED',
+
+            //         'vacanciesByCategory' => [
+            //             [
+            //                 'category'   => 'ADULT',
+            //                 'vacancies'  => (int) $item['avs'],
+            //             ],
+            //             [
+            //                 'category'   => 'CHILD',
+            //                 'vacancies'  => (int) $item['avs'],
+            //             ],
+            //         ],
+            //     ];
         }
 
         //✅ Final response
