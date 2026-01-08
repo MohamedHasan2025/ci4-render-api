@@ -303,14 +303,21 @@ class ApiController extends Controller
             // }
 
             $availabilities[] = [
-                'dateTime' => $item['dt'],
-                'productId' => $item['id'].'-'.$item['fn'],
-                'cutoffSeconds' => $cutoffSeconds,
+                'dateTime' => $item['dt'], // ISO 8601 datetime
+                'productId' => $item['id'],
+                'cutoffSeconds' => (int) $cutoffSeconds,
                 'currency' => 'AED',
+            
                 'vacanciesByCategory' => [
-                    'category' => 'ADULT',
-                    'vacancies' => $item['avs']
-                ]
+                    [
+                        'category'   => 'ADULT',
+                        'vacancies'  => (int) $item['avs'],
+                    ],
+                    [
+                        'category'   => 'CHILD',
+                        'vacancies'  => (int) $item['avs'],
+                    ],
+                ],
             ];
         }
 
