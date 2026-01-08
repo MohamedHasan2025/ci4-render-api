@@ -296,7 +296,7 @@ class ApiController extends Controller
                 if ($count <= 2) {
                     $retailPrices[] = [
                     'category' => strtoupper($price['group'] == 't-14400' ? 'ADULT' : 'CHILD'),
-                    'price'    => (float) $price['price']
+                    'price'    => 710//(float) $price['price']
                 ];
                     $count++;   
                 }                
@@ -310,7 +310,7 @@ class ApiController extends Controller
                 'vacancies' => $item['avs'],
                 'currency' => 'AED',
                 'pricesByCategory' => [
-                    'retailPrices' => 676
+                    'retailPrices' => $retailPrices
                 ]
             ];
 
