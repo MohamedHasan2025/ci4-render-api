@@ -310,7 +310,7 @@ class ApiController extends Controller
                 'vacancies' => $item['avs'],
                 'currency' => 'AED',
                 'pricesByCategory' => [
-                    'retailPrices' => $retailPrices
+                    'retailPrices' => 676
                 ]
             ];
 
