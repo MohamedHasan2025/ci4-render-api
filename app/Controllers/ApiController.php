@@ -290,26 +290,26 @@ class ApiController extends Controller
             $cutoffSeconds = $timestampDt - $timestampCo;
 
             // Build prices
-            $retailPrices = [];
-            $count = 1;
-            foreach ($item['pr'] as $price) {
-                if ($count <= 2) {
-                    $retailPrices[] = [
-                    'category' => strtoupper($price['group'] == 't-14400' ? 'ADULT' : 'CHILD'),
-                    'price'    => '67619'
-                ];
-                    $count++;   
-                }                
-            }
+            // $retailPrices = [];
+            // $count = 1;
+            // foreach ($item['pr'] as $price) {
+            //     if ($count <= 2) {
+            //         $retailPrices[] = [
+            //         'category' => strtoupper($price['group'] == 't-14400' ? 'ADULT' : 'CHILD'),
+            //         'price'    => (float) $price['price']
+            //     ];
+            //         $count++;   
+            //     }                
+            // }
 
             $availabilities[] = [
                 'dateTime' => $item['dt'],
-                'productId' => $item['id'],
+                'productId' => $item['id'].'-'.$item['fn'],
                 'cutoffSeconds' => $cutoffSeconds,
-                'vacancies' => $item['avs'],
                 'currency' => 'AED',
-                'pricesByCategory' => [
-                    'retailPrices' => $retailPrices
+                'vacanciesByCategory' => [
+                    'category' => 'ADULT',
+                    'vacancies' => $item['avs']
                 ]
             ];
         }
