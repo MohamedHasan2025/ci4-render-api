@@ -189,12 +189,12 @@ class ApiController extends Controller
         $password = 'RWry0L=bjvGm';
 
         // Get query parameters
-        // $params = $this->request->getGet();
+        $params = $this->request->getGet();
 
-        // $productId = $params['productId'] ?? null;
-        // $from      = $params['from'] ?? null;
-        // $to        = $params['to'] ?? null;
-        // $pax       = $params['pax'] ?? 5; // default 1
+        $productId = $params['productId'] ?? null;
+        $from      = $params['fromDateTime'] ?? null;
+        $to        = $params['toDateTime'] ?? null;        
+        $pax       = $params['pax'] ?? 2; // default 2
 
         if (!$username || !$password) {
             return $this->response->setJSON([
@@ -202,7 +202,14 @@ class ApiController extends Controller
                 'message' => 'Missing Basic Auth credentials'
             ])->setStatusCode(401);
         }
-
+        
+        if (!$productId || !$from || !$to) {
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => 'Missing required parameters'
+            ])->setStatusCode(401);
+        }
+        
         $hdapitools = new HDAPITools();
 
         $encryptedAuthMessage = $hdapitools->authenticate();
@@ -220,20 +227,13 @@ class ApiController extends Controller
 
         $data_jwt = json_decode($response->getBody());
 
-        // Now prepare request data for times API
-        $jsonData_Times = '{    
-                                "sdate":"2026-03-01",
-                                "edate":"2026-03-10",
-                                "id":"R1001",
-                                "pax":"1"
-                            }';
-
-        // $jsonData_Times = json_encode([
-        //                     "sdate" => $from,
-        //                     "edate" => $to,
-        //                     "id"    => $productId,
-        //                     "pax"   => (string) $pax
-        //                 ]);
+        // Now prepare request data for times API        
+        $jsonData_Times = json_encode([
+                            "sdate" => $from,
+                            "edate" => $to,
+                            "id"    => $productId,
+                            "pax"   => (string) $pax
+                        ]);
                     
         $data_Times = json_decode($jsonData_Times, true);
 
@@ -301,7 +301,7 @@ class ApiController extends Controller
 
             $availabilities[] = [
                 'dateTime' => $item['dt'],
-                'productId' => $item['id'].'-'.$item['fn'],
+                'productId' => $item['id'],
                 'cutoffSeconds' => $cutoffSeconds,
                 'vacancies' => $item['avs'],
                 'currency' => 'AED',
@@ -321,11 +321,69 @@ class ApiController extends Controller
         return $this->response->setJSON($response);
     }
 
+    public function getFlightNumber($jwt, $dateTime, $productId, $pax, $username, $password)
+    {        
+        list($date, $time) = explode('T', $dateTime);
+        
+        // Now prepare request data for times API
+        $jsonData_Times = json_encode([
+                            "sdate" => $date,
+                            "edate" => $date,
+                            "id"    => $productId,
+                            "pax"   => (string) $pax
+                        ]);
+                                   
+        $data_Times = json_decode($jsonData_Times, true);
+        
+        $hdapitools = new HDAPITools();
+
+        $encryptedMessage_Times = $hdapitools->encrypt(json_encode($data_Times));
+        
+        $jsonData = [
+                        'data' => $encryptedMessage_Times,
+                        'jwt' => $jwt
+                    ];
+
+        $client = \Config\Services::curlrequest();
+        $response_Times = $client->post('https://api.helidubai.com/1/credit/times', 
+                                        [
+                                            'auth' => [$username, $password],
+                                            'json' => $jsonData
+                                        ]);
+        
+        // Decrypt response (this returns JSON string)
+        $decryptedResponse = $hdapitools->decrypt(json_decode($response_Times->getBody())->data);
+
+        // // Decode decrypted JSON into associative array
+        $source = json_decode($decryptedResponse, true);
+
+        // Safety check
+        if (!is_array($source)) {
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => 'Invalid decrypted response'
+            ])->setStatusCode(500);
+        }
+
+        $availabilities = [];
+
+        foreach ($source as $item) {
+
+            if($item['dt'] == $dateTime) {
+                return $item['fn'];
+            }
+        }
+        return null;
+    }  
+
     public function reserveAvailability()
     {
         // Get PHP-auth credentials sent via Basic Auth
         $username = $this->request->getServer('PHP_AUTH_USER');
         $password = $this->request->getServer('PHP_AUTH_PW');
+
+        $username = 'hdportallogin1@gmail.com';
+        $password = 'RWry0L=bjvGm';
 
         if (!$username || !$password) {
             return $this->response->setJSON([
@@ -351,24 +409,6 @@ class ApiController extends Controller
 
         $data_jwt = json_decode($response->getBody());
         
-        // $sampleDataFromGYG = '{
-        //                     "data": {
-        //                                 "bookingItems": [
-        //                                 {
-        //                                     "category": "ADULT",
-        //                                     "count": 2
-        //                                 },
-        //                                 {
-        //                                     "category": "CHILD",
-        //                                     "count": 1
-        //                                 }
-        //                                 ],
-        //                                 "dateTime": "2020-12-01T10:00:00+02:00",
-        //                                 "productId": "R1011-HAC3117",
-        //                                 "gygBookingReference": "GYG189H3K1"
-        //                             }
-        //                     }';
-                              
         // Get JSON data from request body
         $json = $this->request->getJSON(true);
         $data = $json['data'] ?? null;        
@@ -381,7 +421,23 @@ class ApiController extends Controller
             $totalPax += (int) $item['count'];
         }
 
-        list($id, $fn) = explode('-', $data['productId'], 2);           
+        $fn = $this->getFlightNumber(
+                                        $data_jwt->jwt, 
+                                        $data['dateTime'], 
+                                        $data['productId'], 
+                                        $totalPax,
+                                        $username,
+                                        $password   
+                                    );
+
+        if (!$fn) {       
+                return $this->response->setJSON([
+                        'errorCode' => 'NO_AVAILABILITY',
+                        'errorMessage' => 'This activity is sold out; no availability found for the selected date/time.'
+                    ]);
+        }   
+
+        $id = $data['productId'];           
         $br = $data['gygBookingReference'];  
         $dateTime = $data['dateTime'];
         $expiryDateTime = $hdapitools->addMinutes($data['dateTime'], 60);
@@ -446,18 +502,6 @@ class ApiController extends Controller
             ]
         ];  
 
-        // // Final response
-        // $response = [
-        //     'data' => $source
-        // ];
-
-        // {
-        //     "data": {
-        //         "reservationReference": "res789",
-        //         "reservationExpiration": "2020-12-01T07:35:53+00:00"
-        //     }
-        // };
-
         return $this->response->setJSON($response);
     }
 
@@ -466,6 +510,9 @@ class ApiController extends Controller
         // Get PHP-auth credentials sent via Basic Auth
         $username = $this->request->getServer('PHP_AUTH_USER');
         $password = $this->request->getServer('PHP_AUTH_PW');
+
+        $username = 'hdportallogin1@gmail.com';
+        $password = 'RWry0L=bjvGm';
 
         if (!$username || !$password) {
             return $this->response->setJSON([
@@ -490,22 +537,7 @@ class ApiController extends Controller
         ]);
 
         $data_jwt = json_decode($response->getBody());
-        
-        // $jsonData =     '{
-        //                     "data": {
-        //                         "reservationReference": "res789",
-        //                         "gygBookingReference": "GYG189H3K1"
-        //                     }
-        //                 }';
-
-        // $jsonData =     '{
-        //                     "data": {
-        //                         "bookingReference": "res789",
-        //                         "gygBookingReference": "GYG189H3K1",
-        //                         "productId": "R1001-HAB3581"
-        //                     }
-        //                 }';
-                              
+                                      
         // Get JSON data from request body
         $json = $this->request->getJSON(true);
         $data = $json['data'] ?? null;  
@@ -576,6 +608,9 @@ class ApiController extends Controller
         $username = $this->request->getServer('PHP_AUTH_USER');
         $password = $this->request->getServer('PHP_AUTH_PW');
 
+        $username = 'hdportallogin1@gmail.com';
+        $password = 'RWry0L=bjvGm';
+
         if (!$username || !$password) {
             return $this->response->setJSON([
                 'status' => 'error',
@@ -599,38 +634,7 @@ class ApiController extends Controller
         ]);
 
         $data_jwt = json_decode($response->getBody());
-        
-        // $sampleDataFromGYG = '{
-        //                             "data": {
-        //                                 "bookingItems": [
-        //                                 {
-        //                                     "category": "ADULT",
-        //                                     "count": 2,
-        //                                     "retailPrice": 1560
-        //                                 },
-        //                                 {
-        //                                     "category": "CHILD",
-        //                                     "count": 1,
-        //                                     "retailPrice": 1300
-        //                                 }
-        //                                 ],
-        //                                 "dateTime": "2020-12-01T10:00:00+02:00",
-        //                                 "currency": "USD",
-        //                                 "gygBookingReference": "GYG1B2D34GHI",
-        //                                 "productId": "prod123",
-        //                                 "reservationReference": "res789",
-        //                                 "travelers": [
-        //                                 {
-        //                                     "email": "john@john-smith.com",
-        //                                     "firstName": "John",
-        //                                     "lastName": "Smith",
-        //                                     "phoneNumber": "+49 030 1231231"
-        //                                 }
-        //                                 ],
-        //                                 "comment": "Please confirm your meeting point \\n Hotel ABC."
-        //                             }
-        //                         }';
-                              
+                                      
         // Get JSON data from request body
         $json = $this->request->getJSON(true);
         $data = $json['data'] ?? null;        
@@ -643,15 +647,6 @@ class ApiController extends Controller
         $name = $data['travelers'][0]['firstName']. ' '. $data['travelers'][0]['lastName'];  
         $email = $data['travelers'][0]['email'];
         $phone = $data['travelers'][0]['phoneNumber'];
-
-        // $jsonData =    '{
-        //                     "bid":"HDPOR05500012",
-        //                     "br":"Ref134",
-        //                     "n":"Hasan",
-        //                     "p":"099898",
-        //                     "e":"test@testingapi.com",
-        //                     "tnc":"1"
-        //                 }';
 
         // Now prepare request data for reserve API
         $requestPayload = [
@@ -704,41 +699,10 @@ class ApiController extends Controller
             ])->setStatusCode(500);
         }       
 
-        // // Final response
-        // $response = [
-        //     'data' => [
-        //         'bookingReference' => $source['bid'],
-        //         'reservationExpiration' => $expiryDateTime
-        //     ]
-        // ];  
-
         // Final response
         $response = [
             'data' => $source
         ];
-
-        // {
-        //     "data": {
-        //         "bookingReference": "bk456",
-        //         "tickets": [
-        //         {
-        //             "category": "ADULT",
-        //             "ticketCode": "code001",
-        //             "ticketCodeType": "QR_CODE"
-        //         },
-        //         {
-        //             "category": "ADULT",
-        //             "ticketCode": "code002",
-        //             "ticketCodeType": "QR_CODE"
-        //         },
-        //         {
-        //             "category": "CHILD",
-        //             "ticketCode": "code003",
-        //             "ticketCodeType": "QR_CODE"
-        //         }
-        //         ]
-        //     }
-        // }
 
         return $this->response->setJSON($response);
     }
