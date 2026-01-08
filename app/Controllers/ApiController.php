@@ -228,9 +228,12 @@ class ApiController extends Controller
         $data_jwt = json_decode($response->getBody());
 
         // Now prepare request data for times API        
+        list($dateFrom, $timeFrom) = explode('T', $from);
+        list($dateTo, $timeTo) = explode('T', $to);
+
         $jsonData_Times = json_encode([
-                            "sdate" => $from,
-                            "edate" => $to,
+                            "sdate" => $dateFrom,
+                            "edate" => $dateTo,
                             "id"    => $productId,
                             "pax"   => (string) $pax
                         ]);
