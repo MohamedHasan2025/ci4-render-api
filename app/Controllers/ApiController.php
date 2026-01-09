@@ -316,7 +316,7 @@ class ApiController extends Controller
 
             $availabilities[] = [
                     'dateTime' => $item['dt'], // ISO 8601 datetime
-                    'productId' => $item['id'] . '-' . $item['fn'],
+                    'productId' => $item['id'],
                     'cutoffSeconds' => (int) $cutoffSeconds,
                     'currency' => 'AED',
 
