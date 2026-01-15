@@ -260,6 +260,13 @@ class ApiController extends Controller
         // // Decode decrypted JSON into associative array
         $source = json_decode($decryptedResponse, true);
 
+        // Handle empty response for no availability
+        if($source == '') {
+            return $this->response->setJSON([
+                'data' => ''
+            ]);
+        }
+        
         // Safety check
         if (!is_array($source)) {
             return $this->response->setJSON([
