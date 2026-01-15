@@ -472,15 +472,20 @@ class ApiController extends Controller
         $expiryDateTime = $hdapitools->addMinutes($data['dateTime'], 60);
         
         // Now prepare request data for reserve API
+        // Base payload
         $requestPayload = [
-                            'fn'  => $fn,                    
-                            'id'  => $id,                
-                            'p'   => $totalPax,     
-                            'br'  => $br,                    
-                            'r'   => 'remarks',              
-                            'w1'  => '90',                   
-                            'tnc' => '1'                     
-                        ];
+            'fn'  => $fn,
+            'id'  => $id,
+            'p'   => $totalPax,
+            'br'  => $br,
+            'r'   => 'remarks',
+            'tnc' => '1'
+        ];
+
+        // Dynamically add w1, w2, w3... based on totalPax
+        for ($i = 1; $i <= $totalPax; $i++) {
+            $requestPayload['w' . $i] = '90';
+        }
 
         $data_Reserve = json_encode($requestPayload, true);
 
