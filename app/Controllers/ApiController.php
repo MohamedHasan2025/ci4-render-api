@@ -198,16 +198,24 @@ class ApiController extends BaseController
 
         if (!$username || !$password) {
             return $this->response->setJSON([
-                'status' => 'error',
-                'message' => 'Missing Basic Auth credentials'
-            ])->setStatusCode(401);
+                'errorCode' => 'AUTHORIZATION_FAILURE',
+                'errorMessage' => 'Missing Basic Auth credentials'
+            ]);
         }
-        
+
         if (!$productId || !$from || !$to) {
             return $this->response->setJSON([
-                'status' => 'error',
-                'message' => 'Missing required parameters'
-            ])->setStatusCode(401);
+                'errorCode' => 'VALIDATION_FAILURE',
+                'errorMessage' => 'Missing required parameters'
+            ]);
+        }
+
+        if ($productId != 'R1011' || $productId != 'R1002'|| $productId != 'R1003'|| $productId != 'R1004'|| $productId != 'R1005'|| $productId != 'R1006'
+            || $productId != 'R1010'|| $productId != 'R1011'|| $productId != 'R1008') {
+            return $this->response->setJSON([
+                'errorCode' => 'INVALID_PRODUCT',
+                'errorMessage' => 'Invalid product ID'
+            ]);
         }
         
         $hdapitools = new HDAPITools();
