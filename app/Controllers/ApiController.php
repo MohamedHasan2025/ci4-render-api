@@ -549,6 +549,14 @@ class ApiController extends BaseController
         $source = json_decode($decryptedResponse, true);
 
         // Safety check
+        // Handle empty response for no availability
+        if($source == '') {
+            return $this->response->setJSON([
+                        'errorCode' => 'NO_AVAILABILITY',
+                        'errorMessage' => 'This activity is sold out; no availability found for the selected date/time.'
+                    ]);
+        }
+        
         if (!is_array($source)) {
             return $this->response->setJSON([
                 'status' => 'error',
