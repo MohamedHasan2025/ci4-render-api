@@ -271,8 +271,10 @@ class ApiController extends BaseController
         // Handle empty response for no availability
         if($source == '') {
             return $this->response->setJSON([
-                'data' => ''
-            ]);
+                    'data' => [
+                        'availabilities' => []
+                    ]
+                ]);
         }
         
         // Safety check
