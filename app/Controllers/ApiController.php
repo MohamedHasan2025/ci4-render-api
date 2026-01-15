@@ -210,8 +210,8 @@ class ApiController extends BaseController
             ]);
         }
 
-        if ($productId != 'R1001' || $productId != 'R1002'|| $productId != 'R1003'|| $productId != 'R1004'|| $productId != 'R1005'|| $productId != 'R1006'
-            || $productId != 'R1010'|| $productId != 'R1011'|| $productId != 'R1008') {
+        if (!($productId == 'R1001' || $productId == 'R1002'|| $productId == 'R1003'|| $productId == 'R1004'|| $productId == 'R1005'|| $productId == 'R1006'
+            || $productId == 'R1010'|| $productId == 'R1011'|| $productId == 'R1008')) {
             return $this->response->setJSON([
                 'errorCode' => 'INVALID_PRODUCT',
                 'errorMessage' => 'Invalid product ID'
