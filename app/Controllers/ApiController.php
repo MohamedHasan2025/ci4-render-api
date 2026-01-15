@@ -396,12 +396,9 @@ class ApiController extends BaseController
         // // Decode decrypted JSON into associative array
         $source = json_decode($decryptedResponse, true);
 
-        // Safety check
-        if (!is_array($source)) {
-            return $this->response->setJSON([
-                'status' => 'error',
-                'message' => 'Invalid decrypted response'
-            ])->setStatusCode(500);
+        // Handle no availability                            
+        if($source == '') {
+            return ''; // No availability
         }
 
         $availabilities = [];
@@ -412,7 +409,7 @@ class ApiController extends BaseController
                 return $item['fn'];
             }
         }
-        return null;
+        return ''; // No availability
     }  
 
     public function reserveAvailability()
@@ -486,13 +483,6 @@ class ApiController extends BaseController
                                         $username,
                                         $password   
                                     );
-
-        if (!$fn) {       
-                return $this->response->setJSON([
-                        'errorCode' => 'NO_AVAILABILITY',
-                        'errorMessage' => 'This activity is sold out; no availability found for the selected date/time.'
-                    ]);
-        }   
 
         $id = $data['productId'];           
         $br = $data['gygBookingReference'];  
