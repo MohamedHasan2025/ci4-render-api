@@ -423,12 +423,12 @@ class ApiController extends BaseController
 
         $username = 'hdportallogin1@gmail.com';
         $password = 'RWry0L=bjvGm';
-
+        
         if (!$username || !$password) {
             return $this->response->setJSON([
-                'status' => 'error',
-                'message' => 'Missing Basic Auth credentials'
-            ])->setStatusCode(401);
+                'errorCode' => 'AUTHORIZATION_FAILURE',
+                'errorMessage' => 'Missing Basic Auth credentials'
+            ]);
         }
 
         $hdapitools = new HDAPITools();
@@ -452,6 +452,24 @@ class ApiController extends BaseController
         $json = $this->request->getJSON(true);
         $data = $json['data'] ?? null;        
 
+        $productId = $data['productId'] ?? null;
+        $dateTime  = $data['dateTime'] ?? null;
+        
+        if (!$productId || !$dateTime ) {
+            return $this->response->setJSON([
+                'errorCode' => 'VALIDATION_FAILURE',
+                'errorMessage' => 'Missing required parameters'
+            ]);
+        }
+
+        if (!($productId == 'R1001' || $productId == 'R1002'|| $productId == 'R1003'|| $productId == 'R1004'|| $productId == 'R1005'|| $productId == 'R1006'
+            || $productId == 'R1010'|| $productId == 'R1011'|| $productId == 'R1008')) {
+            return $this->response->setJSON([
+                'errorCode' => 'INVALID_PRODUCT',
+                'errorMessage' => 'Invalid product ID'
+            ]);
+        }
+        
         // Prepare JSON for external API
         $jsonData = ["data" => $data];
 
@@ -479,7 +497,7 @@ class ApiController extends BaseController
         $id = $data['productId'];           
         $br = $data['gygBookingReference'];  
         $dateTime = $data['dateTime'];
-        $expiryDateTime = $hdapitools->addMinutes($data['dateTime'], 60);
+        $expiryDateTime = $hdapitools->addMinutes($data['dateTime'], 35);
         
         // Now prepare request data for reserve API
         // Base payload
