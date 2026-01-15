@@ -483,7 +483,14 @@ class ApiController extends BaseController
                                         $username,
                                         $password   
                                     );
-
+        
+        if($fn == '') {
+            return $this->response->setJSON([
+                        'errorCode' => 'NO_AVAILABILITY',
+                        'errorMessage' => 'This activity is sold out; no availability found for the selected date/time.'
+                    ]);
+        }
+        
         $id = $data['productId'];           
         $br = $data['gygBookingReference'];  
         $dateTime = $data['dateTime'];
