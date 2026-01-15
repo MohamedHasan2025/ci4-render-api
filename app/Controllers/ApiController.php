@@ -177,7 +177,7 @@ class HDAPITools
     }  
 }
 
-class ApiController extends Controller
+class ApiController extends BaseController
 {      
     public function sendAvailability()
     {
