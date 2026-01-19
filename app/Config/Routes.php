@@ -7,8 +7,8 @@ use CodeIgniter\Router\RouteCollection;
  */
 $routes->get('/', 'Home::index');
 
-$routes->get('/1/get-availabilities(/)?', 'ApiController::sendAvailability');
-$routes->get('/1/get-availabilities/', 'ApiController::sendAvailability');
+//$routes->get('/1/get-availabilities(/)?', 'ApiController::sendAvailability');
+$routes->get('1/get-availabilities/', 'ApiController::sendAvailability');
 
 //$routes->get('1/get-availabilities(/)?', 'ApiController::sendAvailability');
 //$routes->get('1/get-availabilities/', 'ApiController::sendAvailability');
