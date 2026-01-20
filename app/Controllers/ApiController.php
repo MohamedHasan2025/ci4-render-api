@@ -439,7 +439,7 @@ class ApiController extends BaseController
         // Call authenticate internal API with Basic Auth from incoming request
         $client = \Config\Services::curlrequest();
         $response = $client->post('https://api.helidubai.com/1/credit/authenticate', [
-            'auth' => [$username, $password],
+            'auth' => ['hdportallogin1@gmail.com', 'RWry0L=bjvGm'],
             'json' => $jsonData_Auth
         ]);
 
